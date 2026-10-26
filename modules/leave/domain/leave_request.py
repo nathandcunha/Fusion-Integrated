@@ -1,18 +1,40 @@
-# domain/leave_request.py
+"""Pure Python domain data representations for leave requests.
 
-from modules.leave.models import LeaveRequest
-from modules.leave.selectors import get_leave_requests
-from modules.leave.services import create_leave_request, update_leave_request, delete_leave_request
-from modules.leave.api.serializers import LeaveRequestSerializer
-from modules.leave.api.views import LeaveRequestViewSet
+Conforms to the strict domain isolation rule (no Django, DRF or Celery imports).
+"""
+from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from typing import Optional
 
-# Business logic for leave requests
-def approve_leave_request(request_id):
-    request = get_leave_requests(request_id)
-    request.status = 'APPROVED'
-    request.save()
+from modules.leave.domain.constants import HalfDayOption, LeaveCategory, LeaveStatus
 
-def reject_leave_request(request_id):
-    request = get_leave_requests(request_id)
-    request.status = 'REJECTED'
-    request.save()
+
+@dataclass(frozen=True)
+class LeaveApplicationData:
+    user_id: int
+    category: LeaveCategory
+    start_date: date
+    end_date: date
+    computed_days: Decimal
+    reason: str
+    half_day: HalfDayOption = HalfDayOption.NONE
+    substitute_user_id: Optional[int] = None
+    station_leave: bool = False
+    station_address: str = ""
+    station_contact: str = ""
+    station_start_date: Optional[date] = None
+    station_end_date: Optional[date] = None
+    medical_certificate_url: str = ""
+
+
+@dataclass(frozen=True)
+class LeaveRecordData:
+    id: int
+    user_id: int
+    category: LeaveCategory
+    start_date: date
+    end_date: date
+    computed_days: Decimal
+    status: LeaveStatus
+    reason: str
